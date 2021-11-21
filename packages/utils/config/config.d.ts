@@ -16,6 +16,10 @@ export type Config = {
   enableVhostHeader: boolean;
 };
 
+export type Options = {
+  commonPages: boolean;
+};
+
 export type ConfigEntry = (() => Config) | (() => Promise<Config>) | Config;
 
 export default Config;

@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { getTenantConfig } from '../utils/config';
-import { Config } from '../utils/config/config';
+import { Config, Options } from '../utils/config/config';
 import findTenant from '../utils/tenants/findTenant';
 import resolveRoutes from '../utils/routes/resolve';
 import { currentEnv, environmentWarningMessage } from '../utils/env';
@@ -10,14 +10,16 @@ if (!currentEnv) {
 }
 
 export default async function krabs(
-  request: FastifyRequest,
-  reply: FastifyReply,
-  handle: any,
-  app: any,
-  config?: Config): Promise<void> {
+    request: FastifyRequest,
+    reply: FastifyReply,
+    handle: any,
+    app: any,
+    config?: Config,
+    options?: Options
+): Promise<void> {
 
   const { tenants, enableVhostHeader } = config ?? (await getTenantConfig());
-    
+
   const vhostHeader = enableVhostHeader && request.headers['x-vhost'] as string;
   const rawHostname = request.hostname;
   const pathName = request.url;
@@ -33,7 +35,7 @@ export default async function krabs(
     });
   }
 
-  const route = resolveRoutes(tenant?.name as string, pathName);
+  const route = resolveRoutes(tenant?.name as string, pathName, options?.commonPages);
 
   if (route) {
     // @ts-ignore

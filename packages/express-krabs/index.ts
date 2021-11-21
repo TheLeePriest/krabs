@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { parse } from 'url';
 import * as path from 'path';
 import { getTenantConfig } from '../utils/config';
-import { Config } from '../utils/config/config';
+import { Config, Options } from '../utils/config/config';
 import findTenant from '../utils/tenants/findTenant';
 import resolveRoutes from '../utils/routes/resolve';
 import { currentEnv, environmentWarningMessage } from '../utils/env';
@@ -12,11 +12,12 @@ if (!currentEnv) {
 }
 
 async function krabs(
-  req: Request,
-  res: Response,
-  handle: any,
-  app: any,
-  config?: Config,
+    req: Request,
+    res: Response,
+    handle: any,
+    app: any,
+    config?: Config,
+    options?: Options
 ): Promise<void> {
   const { tenants, enableVhostHeader } = config ?? (await getTenantConfig());
 
@@ -44,8 +45,8 @@ async function krabs(
     try {
       const APIPath = pathname.replace(/^\/api\//, '');
       const { default: APIhandler } = require(path.join(
-        process.cwd(),
-        `pages/${tenant.name}/api/${APIPath}`,
+          process.cwd(),
+          `pages/${tenant.name}/api/${APIPath}`,
       ));
       APIhandler(req, res);
     } catch (_) {
@@ -54,7 +55,7 @@ async function krabs(
     return;
   }
 
-  const route = resolveRoutes(tenant.name, String(pathname));
+  const route = resolveRoutes(tenant.name, String(pathname), options?.commonPages);
 
   if (route) {
     // @ts-ignore
